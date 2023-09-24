@@ -9,7 +9,7 @@ l=[]
 o={}
 k=[]
 headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"}
-target_url='https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=Spark&location=United%20Kingdom&start={}'
+target_url='https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=Spark&f_TPR=r604800&f_WT=2&location=United%20Kingdom&start={}'
 
 for i in range(0,math.ceil(117/25)):
 
@@ -31,24 +31,6 @@ for j in range(0,len(l)):
     text = resp.text
     soup=BeautifulSoup(text, 'html.parser')
 
-    # Regular expression pattern for matching email addresses
-    pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
-    # Find all email addresses in the text
-    matches = re.findall(pattern, text)
-
-    if matches:
-        o["email"] = ','.join(matches)
-    else:
-        o["email"] = None
-
-    pattern = r'£(.+)<'
-    match = re.search(pattern, text)
-
-    if match:
-        o["salary"] = match.group()
-    else:
-        o["salary"] = None
-
     try:
         o["company"]=soup.find("div",{"class":"top-card-layout__card"}).find("a").find("img").get('alt')
     except:
@@ -59,10 +41,27 @@ for j in range(0,len(l)):
     except:
         o["job-title"]=None
 
-    try:
-        o["level"]=soup.find("ul",{"class":"description__job-criteria-list"}).find("li").text.replace("Seniority level","").strip()
-    except:
-        o["level"]=None
+    # Regular expression pattern for matching email addresses
+    pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
+    # Find all email addresses in the text
+    matches = re.findall(pattern, text)
+
+    if matches:
+        o["email"] = ','.join(matches)
+    else:
+        o["email"] = None
+
+    pattern = r'£(.+?)<'
+    match = re.search(pattern, text)
+
+    if match:
+        o["salary"] = re.sub([^0-9£kK], '', match.group())
+    else:
+        o["salary"] = None
+    # try:
+    #     o["level"]=soup.find("ul",{"class":"description__job-criteria-list"}).find("li").text.replace("Seniority level","").strip()
+    # except:
+    #     o["level"]=None
 
 
     k.append(o)
